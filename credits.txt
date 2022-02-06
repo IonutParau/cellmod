@@ -1,0 +1,69 @@
+The original Cell Machine was created by Sam Hogan. This is a non-profit remake that simply aims to add more content to the original idea.
+
+People who made ideas for some cells:
+
+Gear - Inspired by Sam Hogan's original idea for the Rotator ("grabs and spins cells around it")
+
+Trash - WorstPacifist#8024
+
+Ungenerateable (renamed from Mold) - cooking soap#7501 (though i couldn't make it pass-through)
+Fungal - cooking soap#7501 (although they dont die if there's too many of them around one like they suggested)
+Magnet - cooking soap#7501
+
+Strong Enemy - Blendi Goose#0414 (or at least he's the person who finally convinced me to add it)
+Trigenerator (Renamed from "Triple Generator") - Blendi Goose#0414
+Bigenerator (Renamed from "Double Generator") - Blendi Goose#0414
+CW/CCW Generators - Blendi Goose#0414
+
+Diverger (renamed from "Redirector") - blaumeise20#4088
+
+Repulsor - fanhalo#6922
+
+Redirector - HeavenlyMessiah#4604
+
+Mirror - Fowo Vinvalut#8835
+
+Weight (renamed from "Condition") - Spunky_Dollish_2#6870
+
+Advancer (renamed from "Pullsher") - Rou_bi#8240, was gonna be in Blendi Goose#0414's b-mod but it was too difficult for him
+
+Pararotator - C6H5CHO#5377
+Displacer(s) - C6H5CHO#5377
+Transmitter - C6H5CHO#5377
+Nudger (renamed from "Speed") - C6H5CHO#5377
+Crimson, Warped, Cancer, Bioweapon, Grey Goo, Bacteria, Prion, Virus - C6H5CHO#5377
+Resistance - C6H5CHO#5377
+Megademolisher - C6H5CHO#5377
+Memory - C6H5CHO#5377
+Twist Diverger - C6H5CHO#5377
+Acid - C6H5CHO#5377
+Conveyor Grapulsor - C6H5CHO#5377
+Constructor, sorta (renamed from "Concretor") - C6H5CHO#5377
+Silicon - C6H5CHO#5377
+Filter - C6H5CHO#5377
+Transmutator - C6H5CHO#5377
+Like, every Slicer variant - C6H5CHO#5377
+Megafreezer (Renamed from "Super Freezer") - C6H5CHO#5377
+Colored Placeables - C6H5CHO#5377
+Remover (Texture) - C6H5CHO#5377
+Broken Mover/Puller (Renamed from "Movlite"/"Pullite") - C6H5CHO#5377
+Termites - C6H5CHO#5377
+
+Staller (renamed from "Brick") - hd28br#6411
+Semifreezer (Renamed from "Slider Freezer") - hd28br#6411
+Deleter Diode - hd28br#6411
+Broken Generator/Replicator - hd28br#6411
+Broken Advancer - hd28br#6411
+Immobilizer - hd28br#6411
+
+Storage - AppaBTW#0001
+
+Spooner - k.#0086
+Grasper (Renamed from Grabber to prevent conflict with the Essentials mod (but names ended up conflicting anyway with the slicer variants lol)) - k.#0086
+
+IMPLY gates - The Electricity Cell#2113 (at least told me what they meant)
+
+Shifter (Inspired by "Tunnel" from B-Mod) - A Monitor#1595
+Transformer - A Monitor#1595
+
+Fire - Inferno#0900
