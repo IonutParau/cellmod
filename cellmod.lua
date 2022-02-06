@@ -309,10 +309,4 @@ function InitTestMod()
   for _, mod in ipairs(mods) do
     require("Mods/" .. mod .. "/main")
   end
-
-  local m = CreateCell("F u", "no", "trash", {
-    specialType = "background",
-  })
-
-  AddToCategory(GetCategory("Movers"), m)
 end
