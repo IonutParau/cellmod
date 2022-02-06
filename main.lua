@@ -2558,8 +2558,8 @@ function IsUnbreakable(cell,dir,x,y,vars)
 end
 
 function IsNonexistant(cell,dir,x,y)	--act like empty space
-	if type(ModStuff.nonexistant[id]) == "function" then
-		return ModStuff.nonexistant[id](cell, dir, x, y)
+	if type(ModStuff.nonexistant[cell.id]) == "function" then
+		return ModStuff.nonexistant[cell.id](cell, dir, x, y)
 	end
 	return cell.id == 0 or cell.id == 116 or cell.id == 117 or cell.id == 118 or cell.id == 119 or cell.id == 120 or cell.id == 121 or cell.id == 122 or cell.id == 223 or cell.id == "wrap"
 end
@@ -3117,7 +3117,7 @@ function HandleNudge(cell,dir,x,y,vars)
 	local rot = cell.rot
 	local side = ToSide(rot,dir)
 	if type(ModStuff.custompush[cell.id]) == "function" then
-		ModStuff.custompush[cell.id](cell, dir, x, y, side, vars, force, "nudge")
+		ModStuff.custompush[cell.id](cell, dir, x, y, vars, side, 1, "nudge")
 	end
 	if vars.active == "replace" then
 		if id == 223 then
@@ -3924,7 +3924,7 @@ function HandleGrasp(force,cell,dir,x,y,vars)
 		vars.ended = true
 		return force
 	elseif type(ModStuff.custompush[cell.id]) == "function" then
-		local p = ModStuff.custompush[cell.id](cell, dir, x, y, side, vars, force, "grab")
+		local p = ModStuff.custompush[cell.id](cell, dir, x, y, vars, side, force, "grab")
 		if p == true then return force end
 		if p == false then return 0 end
 		if type(p) == "number" then return p end
@@ -4039,7 +4039,7 @@ function HandlePull(force,cell,dir,x,y,vars)
 	local rot = cell.rot
 	local side = ToSide(rot,dir)
 	if type(ModStuff.custompush[cell.id]) == "function" then
-		local p = ModStuff.custompush[cell.id](cell, dir, x, y, side, vars, force, "pull")
+		local p = ModStuff.custompush[cell.id](cell, dir, x, y, vars, side, force, "pull")
 		if p == true then return force end
 		if p == false then return 0 end
 		if type(p) == "number" then return p end
@@ -4214,7 +4214,7 @@ function HandleSwap(cell,dir,x,y,vars)
 	local rot = cell.rot
 	local side = ToSide(rot,dir)
 	if type(ModStuff.custompush[cell.id]) == "function" then
-		ModStuff.custompush[cell.id](cell, dir, x, y, side, vars, 1, "swap")
+		ModStuff.custompush[cell.id](cell, dir, x, y, vars, side, 1, "swap")
 	end
 	if (id == 12 or id == 205 or id == 225 or id == 226 or id == 300) and vars.active == "destroy" then
 		Play(destroysound)
@@ -7569,15 +7569,18 @@ function love.mousepressed(x, y, btn)
 		local cx = math.floor((x+cam.x-400*winxm)/cam.zoom)
 		local cy = math.floor((y+cam.y-300*winym)/cam.zoom)
 		if puzzle then
-			if isinitial and GetCell(cx,cy).id ~= 0 then
+			if isinitial then
 				local p = GetPlaceable(cx,cy)
-				if p == "placeable" or p == "placeableR" or p == "placeableY" or p == "placeableG" or p == "placeableC" or p == "placeableB" or p == "placeableP" then
-					draggedcell = GetCell(cx,cy)
-					PlaceCell(cx,cy,getempty())
-				elseif p == "rotatable"then
-					cells[cy][cx].rot = (cells[cy][cx].rot+1)%4
-					PlaceCell(cx,cy,cells[cy][cx])
-				elseif type(ModStuff.whenClicked[p]) == "function" then
+				if GetCell(cx,cy).id ~= 0 then
+					if p == "placeable" or p == "placeableR" or p == "placeableY" or p == "placeableG" or p == "placeableC" or p == "placeableB" or p == "placeableP" then
+						draggedcell = GetCell(cx,cy)
+						PlaceCell(cx,cy,getempty())
+					elseif p == "rotatable"then
+						cells[cy][cx].rot = (cells[cy][cx].rot+1)%4
+						PlaceCell(cx,cy,cells[cy][cx])
+					end
+				end
+				if type(ModStuff.whenClicked[p]) == "function" then
 					ModStuff.whenClicked[p](cells[cy][cx], cx, cy)
 				end
 			end
