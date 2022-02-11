@@ -7073,8 +7073,8 @@ end
 mx,my = 0,0
 function love.update(dt)
 	delta = dt
-	winym = love.graphics.getHeight()/600
 	winxm = love.graphics.getWidth()/800
+	winym = love.graphics.getHeight()/600
 	centerx = 400*winxm
 	centery = 300*winym
 	hoveredbutton = nil
