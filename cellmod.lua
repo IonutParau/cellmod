@@ -31,7 +31,7 @@ ModStuff.currentFormat = "K3;"
 
 CellMod = {}
 
-CellMod.version = 0.8
+CellMod.version = 0.9
 CellMod.versionMode = "Release"
 
 -- Creates a saving format based off of the signature, encoder and decoder
@@ -164,6 +164,11 @@ function RemoveButton(key)
 end
 
 function ClearOldCellbarButtons()
+  RemoveButton('propertybg')
+  for i=1,propertiesopen do
+    RemoveButton('propertyadd' .. i)
+    RemoveButton('propertysub' .. i)
+  end
   for i=0,#lists do
     local list = lists[i]
     RemoveButton("list"..i)
@@ -206,6 +211,7 @@ function RebuildCellbar()
       end
     end
   end
+  NewButton(0,0,110,30,"pix","propertybg",nil,nil,function() end,nil,function() return not puzzle and propertiesopen > 0 end,"bottomleft",nil,{.25,.25,.25,1},{.25,.25,.25,1},{.25,.25,.25,1})
 end
 
 function CatToSub(category)
