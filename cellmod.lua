@@ -19,10 +19,34 @@ ModStuff.acidic = {}
 ModStuff.customprepush = {}
 ModStuff.whenClicked = {}
 ModStuff.specialTypes = {}
+ModStuff.defaultVars = {}
 
 ModStuff.listeners = {}
 
 ModStuff.audioCache = {}
+
+ModStuff.savingFormats = {}
+
+ModStuff.currentFormat = "K3;"
+
+CellMod = {}
+
+CellMod.version = 0.8
+CellMod.versionMode = "Release"
+
+-- Creates a saving format based off of the signature, encoder and decoder
+function CreateSavingFormat(signature, encoder, decoder)
+  ModStuff.savingFormats[signature] = {
+    encode = encoder,
+    decode = decoder,
+  }
+  ModStuff.currentFormat = signature
+end
+
+-- Untested, experimental
+function FromSide(side, rot)
+	return (side+rot-2)%4
+end
 
 function On(event, callback)
   if not ModStuff.listeners[event] then ModStuff.listeners[event] = {} end
@@ -35,6 +59,9 @@ function OnUpdate(callback) On('update', callback) end
 function OnCellDraw(callback) On('cellrender', callback) end
 function OnSubtickCycle(callback) On('tick-cycle', callback) end
 function OnGridRender(callback) On('grid-render', callback) end
+function OnReset(callback) On('grid-reset', callback) end
+function OnClear(callback) On('grid-clear', callback) end
+function OnSetInitial(callback) On('set-initial', callback) end
 
 --- @param sound string
 function PlaySound(sound)
@@ -44,23 +71,55 @@ function PlaySound(sound)
   Play(ModStuff.audioCache[sound])
 end
 
---- @param x number
---- @param y number
+--- @param cx number
+--- @param cy number
 --- @param cell table
 --- @param vars table
+--- @param config table
 --- @param ptype "\"push\""|"\"pull\""|"\"grab\""|"\"swap\""|"\"nudge\""
 -- Call this in your enemies push function to get the base effect of an enemy.
-function DoBaseEnemy(x, y, cell, vars, ptype, replaceID)
-  if ptype == "push" or ptype == "nudge" then
-    cell.id = (replaceID or 0)
-    vars.lastcell.id = 0
-    enemyparticles:setPosition(x*20-10,y*20-10)
-    if fancy then enemyparticles:emit(50) end
-    Play(destroysound)
-    return true
+function DoBaseEnemy(cell, cx, cy, vars, ptype, config)
+  config = config or {}
+  local protected = (cell.protected or vars.lastcell.protected) or false
+
+  if (ptype == "push" or ptype == "nudge") and not protected then
+      cell.id = config.id or 0
+      cell.rot = config.rot or cell.rot
+      cell.lastvars = config.lastvars or cell.lastvars
+      if not config.weak then
+        vars.lastcell.id = 0
+        if fancy then
+          GetCell(cx, cy).eatencells = {table.copy(cell)}
+        end
+      end
+      local particles = config.particles or enemyparticles
+      if fancy then particles:setPosition(cx*20-10,cy*20-10) particles:emit(50) end
+      if not config.silent then
+        Play(config.sound or destroysound)
+      end
+      if type(config.execute) == "function" then config.execute() end
   else
-    return false
+      if not protected then vars.ended = true end
   end
+
+  return true
+end
+
+function DoBaseTrash(cell, vars, ptype, sound, silent)
+  if (ptype == "push" or ptype == "nudge") then
+    if fancy then
+      cell.eatencells = cell.eatencells or {}
+      table.insert(cell.eatencells, table.copy(vars.lastcell))
+    end
+    vars.lastcell.id = 0
+    if not silent then
+      Play(sound or destroysound)
+    end
+  end
+
+  vars.ended = true
+  
+  return true
 end
 
 function GetFrontPos(x, y, dir, amount)
@@ -233,7 +292,7 @@ function MakeCustomIDConversion(toConvert, convertInto)
 end
 
 function CreateCell(title, description, texture, options)
-  local id = (#tex + 1)
+  local id = options.id or (#tex + 1)
   options = options or {}
 
   NewTex(texture, id)
@@ -257,9 +316,10 @@ function CreateCell(title, description, texture, options)
   ModStuff.onCellDraw[id] = options.whenRendered -- 2.-1.5
   ModStuff.whenRotated[id] = options.whenRotated -- 2.-1.5
   ModStuff.acidic[id] = options.isAcidic -- 2.-1.5
-  ModStuff.whenClicked[id] = options.whenClicked
-  ModStuff.specialTypes[id] = options.specialType
+  ModStuff.whenClicked[id] = options.whenClicked -- 2.-1.5
+  ModStuff.specialTypes[id] = options.specialType -- 2.-1.5
   ModStuff.customprepush[id] = options.prepush
+  ModStuff.defaultVars[id] = options.defaultVars -- 2.-1.5
 
   if options.convertID ~= nil then
     ModStuff.flipmode[id] = "none"
@@ -306,7 +366,21 @@ local renderStack = {}
 
 function InitTestMod()
   local mods = love.filesystem.getDirectoryItems("Mods")
+  CellMod.Mods = mods
   for _, mod in ipairs(mods) do
     require("Mods/" .. mod .. "/main")
+  end
+
+  if CellMod.versionMode == "Beta" then
+    CreateCell("Test Cell", "Used just for testing", "mover", {
+      id = "test",
+      specialType = "enemy",
+      push = function(cell, dir, x, y, vars, side, force, ptype)
+        return DoBaseEnemy(cell, x, y, vars, ptype)
+      end,
+      isDestroyer = function() return true end,
+    })
+
+    AddToCategory(GetCategory("Movers"), "test")
   end
 end

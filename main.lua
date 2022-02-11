@@ -877,7 +877,7 @@ function hudrotation()
 end
 
 NewButton(0,0,9001,54,"menubar","menubar",nil,nil,function() end,nil,function() return not puzzle end,"bottom",nil,{1,1,1,1},{1,1,1,1},{1,1,1,1})
-local lastselects = {}
+lastselects = {}
 NewButton(6,6,40,40,"eraser","lastselecttab","Last Selections",nil,function() openedtab = openedtab == -2 and -1 or -2; openedsubtab = -1; propertiesopen = 0 end,false,function() return not puzzle end,"bottomright", hudrotation)
 for i=1,10 do
 	table.insert(lastselects,NewButton(16,i*20+34,20,20,"eraser","lastselect"..i,cellinfo["eraser"].name,cellinfo["eraser"].desc,function() propertiesopen = 0; SetSelectedCell("eraser"); openedsubtab = -1 end,false,function() return not puzzle and openedtab == -2 end,"bottomright"))
@@ -1092,6 +1092,7 @@ function CopyVars(id)
 end
 
 function IsEnemy(id)
+	if ModStuff.specialTypes[id] == "enemy" then return true end
 	return id == 13 or id == 24 or id == 160 or id == 163 or id == 164 or id == 244 or id == 299
 end
 
@@ -1114,6 +1115,9 @@ function AllChunkIds(cell)
 end
 
 function DefaultVars(id)	--Default variables.
+	if type(ModStuff.defaultVars[id]) == "table" then
+		return table.copy(ModStuff.defaultVars[id])
+	end
 	if id == 206 then return {0,0,0}
 	elseif id == 211 then return {[3]=250,[4]=25}
 	elseif id == 212 then return {[3]=250,[4]=0}
@@ -1223,6 +1227,7 @@ function CopyCell(x,y)
 end
 
 function ClearWorld()
+	Trigger('grid-clear')
 	bgsprites:clear()
 	TogglePause(true)
 	selection.on = false
@@ -1267,7 +1272,14 @@ function ClearWorld()
 	ResetPortals()
 end
 
+local firstRefresh = true
+
 function RefreshWorld()
+	if firstRefresh then
+		firstRefresh = false
+	else
+		Trigger('grid-reset')
+	end
 	bgsprites:clear()
 	TogglePause(true)
 	selection.on = false
@@ -2182,6 +2194,15 @@ end
 
 function LoadWorld()
 	local txt = love.system.getClipboardText()
+
+	for sig, format in pairs(ModStuff.savingFormats) do
+		if string.sub(txt, 1, #sig) == sig then
+			format.decode()
+			Play(beep)
+			return
+		end
+	end
+
 	if string.sub(txt,1,2) == "V3" then
 		DecodeV3(love.system.getClipboardText())
 		Play(beep)
@@ -2218,6 +2239,9 @@ function NextLevel()
 end
 
 function SaveWorld()
+	if ModStuff.currentFormat ~= "K3" then
+		ModStuff.savingFormats[ModStuff.currentFormat].encode()
+	end
 	local currentcell = 0
 	local result = "K3"
 	if string.len(title) > 0 then
@@ -2242,6 +2266,7 @@ function SaveWorld()
 end
 
 function SetInitial()
+	Trigger('set-initial')
 	for y=0,height-1 do
 		for x=0,width-1 do
 			initial[y][x] = {}
@@ -2631,6 +2656,18 @@ function NextCell(x,y,dir,lastcell,reversed,checkfirst,determinative)	--i know i
 			local cell = GetCell(x,y)
 			local id = cell.id
 			local side = ToSide(cell.rot,dir)
+			if type(ModStuff.nextCells[id]) == "function" then
+				local odir, ox, oy, olastcell = dir, x, y, lastcell
+				dir, x, y, lastcell = ModStuff.nextCells[id](x, y, dir, lastcell, reversed, checkfirst, determinative)
+
+				if dir == nil then
+					dir = odir
+					goto stop
+				end
+				x = x or ox
+				y = y or oy
+				lastcell = lastcell or olastcell
+			end
 			if id == 16 or id == 91 then
 				if side == 0 then
 					if id == 16 then lastcell.rot = (lastcell.rot - 1)%4 end
@@ -3371,7 +3408,10 @@ function HandlePush(force,cell,dir,x,y,vars)
 	local side = ToSide(rot,dir)
 	local gfactor = cell.vars.gravdir == dir and 1 or cell.vars.gravdir == (dir+2)%4 and -1 or 0
 	if type(ModStuff.custompush[cell.id]) == "function" then
-		return ModStuff.custompush[cell.id](cell, dir, x, y, vars, side, force + gfactor, "push")
+		local p = ModStuff.custompush[cell.id](cell, dir, x, y, vars, side, force + gfactor, "push")
+		if p == true then return force + gfactor end
+		if p == false then return 0 end
+		if type(p) == "number" then return p end
 	end
 	if cell.sticky and not vars.checkonly then
 		if not vars.sticking then stickkey = stickkey + 1 end
@@ -7033,11 +7073,12 @@ end
 mx,my = 0,0
 function love.update(dt)
 	delta = dt
-	winxm = love.graphics.getWidth()/800
 	winym = love.graphics.getHeight()/600
+	winxm = love.graphics.getWidth()/800
 	centerx = 400*winxm
 	centery = 300*winym
 	hoveredbutton = nil
+	Trigger('update', delta)
 	for i=1,#buttonorder do
 		local b = buttons[buttonorder[i]]
 		if b.isenabled() then
