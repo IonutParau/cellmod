@@ -31,8 +31,42 @@ ModStuff.currentFormat = "K3;"
 
 CellMod = {}
 
-CellMod.version = 0.9
+function CellMod.SplitStr(str, sep)
+  local split = {""}
+
+  for i=1,#str do
+    local char = string.sub(str, i, i)
+    if char == sep then
+      table.insert(split, "")
+    else
+      split[#split] = split[#split] .. char
+    end
+  end
+
+  return split
+end
+
+-- Checks if the first version is better than the 2nd version
+function CellMod.CheckVersion(v1, v2)
+  local v1s = CellMod.SplitStr(CellMod.SplitStr(v1, " ")[1], ".")
+  local v1num = tonumber(v1s[1] or "0") * 1000000000 + tonumber(v1s[2] or "0") * 1000000 + tonumber(v1s[3] or "0") * 1000 + tonumber(v1s[4] or "0")
+
+  local v2s = CellMod.SplitStr(CellMod.SplitStr(v2, " ")[1], ".")
+  local v2num = tonumber(v2s[1] or "0") * 1000000000 + tonumber(v2s[2] or "0") * 1000000 + tonumber(v2s[3] or "0") * 1000 + tonumber(v2s[4] or "0")
+
+  return (v1num >= v2num)
+end
+
+CellMod.version = "1.0.0"
 CellMod.versionMode = "Release"
+
+CellMod.defaultMenuFilter = function(normal, index) return normal end
+
+ModStuff.propertyMenuFilter = CellMod.defaultMenuFilter
+
+function MakePropertyMenuFilter(filter)
+  ModStuff.propertyMenuFilter = filter
+end
 
 -- Creates a saving format based off of the signature, encoder and decoder
 function CreateSavingFormat(signature, encoder, decoder)
@@ -62,6 +96,30 @@ function OnGridRender(callback) On('grid-render', callback) end
 function OnReset(callback) On('grid-reset', callback) end
 function OnClear(callback) On('grid-clear', callback) end
 function OnSetInitial(callback) On('set-initial', callback) end
+
+---@param func function
+---@param inject function
+function CellMod.InjectInFunction(func, inject)
+  assert(type(func) == "function", "Attempted to inject into a non-function")
+  assert(type(inject) == "function", "Attempted to inject a non-function into a function")
+
+  return function(...)
+    inject(...)
+    func(...)
+  end
+end
+
+---@param func function
+---@param inject function
+function CellMod.InjectPostFunction(func, inject)
+  assert(type(func) == "function", "Attempted to inject into a non-function")
+  assert(type(inject) == "function", "Attempted to inject a non-function into a function")
+
+  return function(...)
+    func(...)
+    inject(...)
+  end
+end
 
 --- @param sound string
 function PlaySound(sound)

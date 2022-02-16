@@ -886,6 +886,7 @@ end
 propertynames = {}
 propertiesopen = 0
 function MakePropertyMenu(properties,b)
+	ModStuff.propertyMenuFilter = CellMod.defaultMenuFilter
 	propertynames = {}
 	propertiesopen = #properties
 	local x,y
@@ -2239,8 +2240,9 @@ function NextLevel()
 end
 
 function SaveWorld()
-	if ModStuff.currentFormat ~= "K3" then
+	if ModStuff.currentFormat ~= "K3;" then
 		ModStuff.savingFormats[ModStuff.currentFormat].encode()
+		return
 	end
 	local currentcell = 0
 	local result = "K3"
@@ -2660,13 +2662,14 @@ function NextCell(x,y,dir,lastcell,reversed,checkfirst,determinative)	--i know i
 				local odir, ox, oy, olastcell = dir, x, y, lastcell
 				dir, x, y, lastcell = ModStuff.nextCells[id](x, y, dir, lastcell, reversed, checkfirst, determinative)
 
+				x = x or ox
+				y = y or oy
+				lastcell = lastcell or olastcell
+
 				if dir == nil then
 					dir = odir
 					goto stop
 				end
-				x = x or ox
-				y = y or oy
-				lastcell = lastcell or olastcell
 			end
 			if id == 16 or id == 91 then
 				if side == 0 then
@@ -7431,7 +7434,7 @@ function love.draw()
 			if buttonorder[i] == "propertybg" then
 				for i=1,#propertynames do
 					love.graphics.setColor(1,1,1,1)
-					love.graphics.printf(propertynames[i]..": "..chosen.data[i],x,y-(#propertynames-i+1)*25*uiscale+b.h*uiscale*.5+5*uiscale,100,"center",0,uiscale,uiscale,50,0)
+					love.graphics.printf(ModStuff.propertyMenuFilter(propertynames[i]..": "..chosen.data[i], i),x,y-(#propertynames-i+1)*25*uiscale+b.h*uiscale*.5+5*uiscale,100,"center",0,uiscale,uiscale,50,0)
 				end
 			elseif buttonorder[i] == "joystick" and hoveredbutton == b and love.mouse.isDown(1) then
 				jx,jy = -love.mouse.getX()+love.graphics.getWidth()-90*uiscale,-love.mouse.getY()+love.graphics.getHeight()-120*uiscale
