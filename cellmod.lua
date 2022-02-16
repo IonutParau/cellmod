@@ -57,7 +57,7 @@ function CellMod.CheckVersion(v1, v2)
   return (v1num >= v2num)
 end
 
-CellMod.version = "1.0.0"
+CellMod.version = "1.0.1"
 CellMod.versionMode = "Release"
 
 CellMod.defaultMenuFilter = function(normal, index) return normal end
